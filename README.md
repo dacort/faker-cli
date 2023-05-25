@@ -8,10 +8,10 @@ You can also utilize pre-built templates for common data formats!
 
 ## Usage
 
-By default, faker-cli will generate a CSV output for you. You just specify the number of rows you want and the column types.
+By default, `fake` will generate a CSV output for you. You just specify the number of rows you want and the column types.
 
 ```bash
-faker-cli -n 10 pyint,user_name,date_this_year
+fake -n 10 pyint,user_name,date_this_year
 ```
 
 BAM! You've got a CSV file with your data.
@@ -35,7 +35,7 @@ pyint,user_name,date_this_year
 Wnat a JSON file? Sweet, use `-f json`.
 
 ```bash
-faker-cli -n 10 pyint,user_name,date_this_year -f json
+fake -n 10 pyint,user_name,date_this_year -f json
 ```
 
 ```json
@@ -54,7 +54,7 @@ faker-cli -n 10 pyint,user_name,date_this_year -f json
 Default column names aren't good enough for you? Fine, use your own.
 
 ```bash
-faker-cli -n 10 pyint,user_name,date_this_year -f json -c id,awesome_name,last_attention_at
+fake -n 10 pyint,user_name,date_this_year -f json -c id,awesome_name,last_attention_at
 ```
 
 ```
@@ -77,5 +77,5 @@ As of now,the only amazing best template supported ever is `s3access`.
 Want to generate 1 MILLION S3 Access logs in ~2 minutes? Now you can.
 
 ```bash
-faker-cli -t s3access -n 10
+fake -t s3access -n 10
 ```
