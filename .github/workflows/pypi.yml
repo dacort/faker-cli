@@ -1,4 +1,9 @@
-# .github/workflows/ci-cd.yml
+name: PyPi PUblish
+on:
+  # Only deploy these artifacts when a semantic tag is applied
+  push:
+    tags:
+      - "v*.*.*"
 jobs:
   pypi-publish:
     name: Upload release to PyPI
