@@ -1,7 +1,7 @@
 from faker import Faker
 import click
 import sys
-from faker_cli.templates import S3AccessLogs, S3AccessWriter
+from faker_cli.templates import S3AccessLogs, S3AccessWriter, CloudTrailLogs
 
 from faker_cli.writer import CSVWriter, JSONWriter
 from typing import List
@@ -23,6 +23,7 @@ KLAS_MAPPER = {
 
 fake = Faker()
 fake.add_provider(S3AccessLogs)
+fake.add_provider(CloudTrailLogs)
 
 @click.command()
 @click.option("--num-rows", "-n", default=1, help="Number of rows")

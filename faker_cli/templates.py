@@ -89,6 +89,8 @@ class AWSConstants:
         "us-gov-west-1",
     ]
 
+    _services: List[str] = ["ec2", "cloudtrail", "s3"]
+
 
 class S3AccessWriter(Writer):
     def __init__(self, output, headers):
@@ -121,6 +123,7 @@ class AWSProvider(BaseProvider):
             account_id = self.aws_account_id()
 
         # TODO: There are a WHOLE bunch more rules here to take care of
+        # Also figure out how to handle if resource-type is specificed
         if resource_id is None:
             if service == "iam":
                 resource_id = self.generator.random_element(elements=["root", f"user/{self.generator.user_name()}"])
@@ -306,7 +309,7 @@ class S3AccessLogs(AWSProvider):
         return str(self._http_status_code())
 
     def error_code(self) -> str:
-        return self.generator.random_element(elements=("NoSuchBucket", "NoSuchLifecycleConfiguration" "-"))
+        return self.generator.random_element(elements=("NoSuchBucket", "NoSuchLifecycleConfiguration", "-"))
 
     def bytes_sent(self, total_object_size: Optional[int] = None) -> str:
         return self.generator.random_element(
@@ -408,3 +411,32 @@ class S3AccessLogs(AWSProvider):
 
 # then add new provider to faker instance
 # fake.add_provider(S3AccessLogs)
+
+
+class CloudTrailLogs(AWSProvider):
+    def event_version(self) -> str:
+        return "1.0"
+
+    def event_time(self) -> str:
+        return self.generator.iso8601()
+
+    def event_source(self) -> str:
+        return self.generator.random_element(AWSConstants._services) + ".amazonaws.com"
+
+    def user_id_with_iam_user(self) -> str:
+        """
+        "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAJ45Q7YFFAREXAMPLE",
+        "arn": "arn:aws:iam::123456789012:user/Alice",
+        "accountId": "123456789012",
+        "accessKeyId": "",
+        "userName": "Alice"
+        }
+        """
+        return {
+            "type": "IAMUser",
+            "principalId": "AIDAJ45Q7YFFAREXAMPLE",
+            "arn": self.aws_arn(service="iam", resource_type="user"),
+            "accountId": self.aws_account_id(),
+        }
