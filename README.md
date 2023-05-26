@@ -72,10 +72,16 @@ fake -n 10 pyint,user_name,date_this_year -f json -c id,awesome_name,last_attent
 
 ## Templates
 
-As of now,the only amazing best template supported ever is `s3access`.
-
 Want to generate 1 MILLION S3 Access logs in ~2 minutes? Now you can.
 
 ```bash
 fake -t s3access -n 10
 ```
+
+How about CloudFront? Go ahead.
+
+```bash
+fake -t cloudfront -n 10
+```
+
+> **Warning**: Both of these templates are still being validated - please be cautious!
