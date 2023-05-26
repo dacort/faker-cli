@@ -4,7 +4,7 @@ A template consissts of a combination of a custom output writer format and row f
 from collections import OrderedDict
 import string
 import random
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 from faker_cli.writer import Writer
 from faker.providers import BaseProvider
 import datetime as dt
@@ -91,6 +91,110 @@ class AWSConstants:
 
     _services: List[str] = ["ec2", "cloudtrail", "s3"]
 
+    # Generated from github.com/tobilg/aws-edge-lcoations
+    # curl -L "https://github.com/tobilg/aws-edge-locations/raw/master/dist/aws-edge-locations.json" | \
+    # jq -r 'keys[] as $k | "(\"\($k)\", \(.[$k] | .count)),"'  | pbcopy
+    _cloudfront_edge_locations: List[Tuple[str, int]] = [
+        ("AKL", 2),
+        ("AMS", 5),
+        ("ARN", 4),
+        ("ATH", 1),
+        ("ATL", 17),
+        ("BAH", 2),
+        ("BCN", 2),
+        ("BKK", 2),
+        ("BLR", 5),
+        ("BNA", 2),
+        ("BOG", 3),
+        ("BOM", 8),
+        ("BOS", 5),
+        ("BRU", 1),
+        ("BUD", 1),
+        ("CCU", 2),
+        ("CDG", 11),
+        ("CGK", 5),
+        ("CMH", 1),
+        ("CPH", 3),
+        ("CPT", 1),
+        ("DEL", 14),
+        ("DEN", 6),
+        ("DFW", 18),
+        ("DTW", 2),
+        ("DUB", 2),
+        ("DUS", 3),
+        ("DXB", 1),
+        ("EWR", 10),
+        ("EZE", 2),
+        ("FCO", 6),
+        ("FJR", 3),
+        ("FOR", 4),
+        ("FRA", 17),
+        ("GIG", 5),
+        ("GRU", 8),
+        ("HAM", 6),
+        ("HAN", 1),
+        ("HEL", 4),
+        ("HIO", 1),
+        ("HKG", 4),
+        ("HYD", 5),
+        ("IAD", 20),
+        ("IAH", 6),
+        ("ICN", 8),
+        ("JFK", 8),
+        ("JNB", 1),
+        ("KIX", 5),
+        ("KUL", 2),
+        ("LAX", 15),
+        ("LHR", 25),
+        ("LIM", 2),
+        ("LIS", 1),
+        ("MAA", 8),
+        ("MAD", 10),
+        ("MAN", 5),
+        ("MCI", 2),
+        ("MCT", 1),
+        ("MEL", 3),
+        ("MIA", 11),
+        ("MNL", 1),
+        ("MRS", 6),
+        ("MSP", 4),
+        ("MUC", 4),
+        ("MXP", 9),
+        ("NBO", 1),
+        ("NRT", 22),
+        ("ORD", 20),
+        ("OSL", 2),
+        ("OTP", 1),
+        ("PDX", 2),
+        ("PEK", 1),
+        ("PER", 1),
+        ("PHL", 2),
+        ("PHX", 3),
+        ("PMO", 1),
+        ("PNQ", 1),
+        ("PRG", 1),
+        ("PVG", 1),
+        ("QRO", 1),
+        ("SCL", 3),
+        ("SEA", 6),
+        ("SFO", 8),
+        ("SGN", 1),
+        ("SIN", 7),
+        ("SLC", 1),
+        ("SOF", 1),
+        ("SYD", 4),
+        ("SZX", 1),
+        ("TLV", 2),
+        ("TPA", 1),
+        ("TPE", 3),
+        ("TXL", 5),
+        ("VIE", 3),
+        ("WAW", 3),
+        ("ZAG", 1),
+        ("ZHY", 1),
+        ("ZRH", 2),
+    ]
+
 
 class S3AccessWriter(Writer):
     def __init__(self, output, headers):
@@ -151,6 +255,22 @@ class AWSProvider(BaseProvider):
                 )
         return f"arn:aws:{service}::{self.aws_account_id()}:{resource}"
 
+    def _random_alnum(
+        self,
+        length: int = 64,
+        elements: Optional[List[str]] = [string.ascii_lowercase, string.digits],
+    ) -> str:
+        return "".join(random.choices("".join(elements), k=length))
+
+    def _http_status_code(self, response_type: Optional[str] = None) -> int:
+        status_codes = None
+        if response_type is not None:
+            status_codes = AWSConstants._http_status_codes.get(response_type)
+        else:
+            status_codes = [num for sublist in AWSConstants._http_status_codes.values() for num in sublist]
+
+        return self.generator.random_element(elements=status_codes)
+
 
 class S3AccessLogs(AWSProvider):
     __use_weighting__ = True
@@ -179,7 +299,7 @@ class S3AccessLogs(AWSProvider):
         return [
             bucket_owner,
             bucket,
-            self.time(),
+            self.s3a_time(),
             self.remote_ip(),
             self.requestor(),
             path,
@@ -203,13 +323,6 @@ class S3AccessLogs(AWSProvider):
             self.acl_required(),
         ]
 
-    def _random_alnum(
-        self,
-        length: int = 64,
-        elements: Optional[List[str]] = [string.ascii_lowercase, string.digits],
-    ) -> str:
-        return "".join(random.choices("".join(elements), k=length))
-
     def s3_bucket_owner(self) -> str:
         return self._random_alnum(64)
 
@@ -220,7 +333,7 @@ class S3AccessLogs(AWSProvider):
     def s3_bucket_owner_tuple(self) -> str:
         return self.generator.random_element(elements=self.bucket_owner_tuples)
 
-    def time(self) -> str:
+    def s3a_time(self) -> str:
         return self.generator.date_time(tzinfo=dt.timezone.utc).strftime("[%d/%b/%Y:%H:%M:%S %z]")
 
     def remote_ip(self) -> str:
@@ -399,21 +512,10 @@ class S3AccessLogs(AWSProvider):
     def acl_required(self) -> str:
         return self.generator.random_element(elements=("Yes", "-"))
 
-    def _http_status_code(self, response_type: Optional[str] = None) -> int:
-        status_codes = None
-        if response_type is not None:
-            status_codes = AWSConstants._http_status_codes.get(response_type)
-        else:
-            status_codes = [num for sublist in AWSConstants._http_status_codes.values() for num in sublist]
-
-        return self.generator.random_element(elements=status_codes)
-
-
-# then add new provider to faker instance
-# fake.add_provider(S3AccessLogs)
-
 
 class CloudTrailLogs(AWSProvider):
+    __use_weighting__ = True
+
     def event_version(self) -> str:
         return "1.0"
 
@@ -425,18 +527,255 @@ class CloudTrailLogs(AWSProvider):
 
     def user_id_with_iam_user(self) -> str:
         """
+        https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-user-identity.html#cloudtrail-event-reference-user-identity-examples
         "userIdentity": {
-        "type": "IAMUser",
-        "principalId": "AIDAJ45Q7YFFAREXAMPLE",
-        "arn": "arn:aws:iam::123456789012:user/Alice",
-        "accountId": "123456789012",
-        "accessKeyId": "",
-        "userName": "Alice"
+            "type": "IAMUser",
+            "principalId": "AIDAJ45Q7YFFAREXAMPLE",
+            "arn": "arn:aws:iam::123456789012:user/Alice",
+            "accountId": "123456789012",
+            "accessKeyId": "",
+            "userName": "Alice"
         }
         """
+        username = self.generator.user_name()
+        accountid = self.aws_account_id()
         return {
             "type": "IAMUser",
             "principalId": "AIDAJ45Q7YFFAREXAMPLE",
-            "arn": self.aws_arn(service="iam", resource_type="user"),
-            "accountId": self.aws_account_id(),
+            "arn": self.aws_arn(service="iam", account_id=accountid, resource_type="user", resource_id=username),
+            "accountId": accountid,
+            "accessKeyId": "",
+            "userName": username,
         }
+
+class CloudFrontWriter(Writer):
+    def __init__(self, output, headers):
+        super().__init__(output, headers)
+        self.output.write("#Version: 1.0\n")
+        self.output.write("#Fields: date time x-edge-location sc-bytes c-ip cs-method cs(Host) cs-uri-stem sc-status cs(Referer) cs(User-Agent) cs-uri-query cs(Cookie) x-edge-result-type x-edge-request-id x-host-header cs-protocol cs-bytes time-taken x-forwarded-for ssl-protocol ssl-cipher x-edge-response-result-type cs-protocol-version fle-status fle-encrypted-fields c-port time-to-first-byte x-edge-detailed-result-type sc-content-type sc-content-len sc-range-start sc-range-end\n")
+
+    def write(self, row):
+        self.output.write("\t".join(map(str, row)) + "\n")
+
+class CloudFrontLogs(AWSProvider):
+    __use_weighting__ = True
+    """
+    https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/AccessLogs.html#LogFileFormat
+    """
+
+    def cloudfront_log(self) -> List[str]:
+        return [
+            self.cf_date(),
+            self.cf_time(),
+            self.edge_location(),
+            self.sc_bytes(),
+            self.c_ip(),
+            self.cs_method(),
+            self.cs_host(),
+            self.cs_uri_stem(),
+            self.sc_status(),
+            self.referer_domain(),
+            self.generator.user_agent(),
+            self.cs_uri_query(),
+            self.cs_cookie(),
+            self.result_type(),
+            self.edge_request_id(),
+            self.x_host_header(),
+            self.cs_protocol(),
+            self.cs_bytes(),
+            self.time_taken(),
+            self.xforwarded_for(),
+            self.ssl_protocol(),
+            self.ssl_cipher(),
+            self.response_result_type(),
+            self.cs_protocol_version(),
+            self.fle_status(),
+            self.fle_encrypted_fields(),
+            self.c_port(),
+            self.time_to_first_byte(),
+            self.x_edge_detailed_result_type(),
+            self.sc_content_type(),
+            self.sc_content_len(),
+            self.sc_range_start(),
+            self.sc_range_end(),
+        ]
+
+    def cf_date(self) -> str:
+        return f"{self.generator.date_this_decade()}"
+
+    def cf_time(self) -> str:
+        return f"{self.generator.time()}"
+
+    def edge_location(self) -> str:
+        total_pops = sum(v[1] for v in AWSConstants._cloudfront_edge_locations)
+        pop = self.generator.random_element(
+            elements=(OrderedDict([(v[0], v[1] / total_pops) for v in AWSConstants._cloudfront_edge_locations]))
+        )
+
+        return f"{pop}{self.generator.pyint(50, 58)}-{self.generator.random_element(['C', 'P'])}{self.generator.pyint(1,8)}"  # noqa: E501
+
+    def sc_bytes(self) -> str:
+        return self.generator.pyint(min_value=1, max_value=1024 * 1024 * 1024)
+
+    def c_ip(self) -> str:
+        return self.generator.random_element([self.generator.ipv4(), self.generator.ipv6()])
+
+    def cs_method(self) -> str:
+        return self._http_status_code()
+
+    def cs_host(self) -> str:
+        return f"d{self._random_alnum(13)}.cloudfront.net"
+
+    def cs_uri_stem(self) -> str:
+        return self.generator.file_path()
+
+    def sc_status(self) -> str:
+        return self.generator.random_element(
+            elements=OrderedDict(
+                [
+                    ("000", 0.01),
+                    (self._http_status_code(), 0.9),
+                ]
+            )
+        )
+
+    def referer_domain(self) -> str:
+        return self.generator.random_element(elements=("-", self.generator.domain_name()))
+
+    def cs_uri_query(self) -> str:
+        return self.generator.random_element(
+            elements=(
+                "-",
+                f"{self.generator.word(part_of_speech='verb')}={self.generator.word(part_of_speech='noun')}",
+            )
+        )
+
+    def cs_cookie(self) -> str:
+        return self.cs_uri_query()
+
+    def result_type(self) -> str:
+        return self.generator.random_element(
+            elements=("Hit", "RefreshHit", "Miss", "LimitExceeded", "CapacityExceeded", "Error", "Redirect")
+        )
+
+    def edge_request_id(self) -> str:
+        return self._random_alnum(56)
+
+    def x_host_header(self, cs_host: Optional[str] = None) -> str:
+        return self.generator.random_element(elements=(self.generator.domain_name(), cs_host or self.cs_host()))
+
+    def cs_protocol(self) -> str:
+        return self.generator.random_element(elements=("http", "https", "ws", "wss"))
+
+    def cs_bytes(self) -> int:
+        return self.generator.pyint(min_value=1, max_value=1024 * 1024 * 1024)
+
+    def time_taken(self) -> int:
+        return self.generator.pyfloat(right_digits=3, positive=True, max_value=1000)
+
+    def xforwarded_for(self) -> str:
+        return self.generator.random_element(["-", self.generator.ipv4(), self.generator.ipv6()])
+
+    def ssl_protocol(self, protocol: Optional[str] = None) -> str:
+        """
+        https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/secure-connections-supported-viewer-protocols-ciphers.html
+        """
+        if protocol is not None and protocol == "http":
+            return "-"
+
+        return self.generator.random_element(elements=("SSLv3", "TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3"))
+
+    def ssl_cipher(self, protocol: Optional[str] = None) -> str:
+        """
+        https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/secure-connections-supported-viewer-protocols-ciphers.html
+        """
+        if protocol is not None and protocol == "http":
+            return "-"
+
+        # TODO: Make this somewhat more realistic
+        return "-".join(
+            [
+                self.generator.random_element(AWSConstants._key_exchange_algorithms),
+                self.generator.random_element(AWSConstants._authentication_algorithms),
+                self.generator.random_element(AWSConstants._cipher_algorithms)
+                + self.generator.random_element(elements=("128", "256")),
+                self.generator.random_element(AWSConstants._mac_algorithms)
+                + self.generator.random_element(elements=("128", "256")),
+            ]
+        )
+
+    def response_result_type(self) -> str:
+        return self.result_type()
+
+    def cs_protocol_version(self) -> str:
+        # https://almanac.httparchive.org/en/2020/http
+        http_version = self.generator.random_element(
+            elements=OrderedDict(
+                [
+                    ("0.9", 0.01),
+                    ("1.0", 0.05),
+                    ("1.1", 0.41),
+                    ("2.0", 0.38),
+                    ("3.0", 0.25),
+                ]
+            )
+        )
+        return f"HTTP/{http_version}"
+
+    def fle_status(self, fle_enabled: Optional[bool] = False) -> str:
+        if not fle_enabled:
+            return "-"
+
+        # TODO: Make the errors line up with status codes
+        return self.generator.random_element(
+            elements=(
+                "ForwardedByContentType",
+                "ForwardedByQueryArgs",
+                "ForwardedDueToNoProfile",
+                "MalformedContentTypeClientError",
+                "MalformedInputClientError",
+                "MalformedQueryArgsClientError",
+                "RejectedByContentType",
+                "RejectedByQueryArgs",
+                "ServerError",
+                "FieldLengthLimitClientError",
+                "FieldNumberLimitClientError",
+                "RequestLengthLimitClientError",
+            )
+        )
+
+    def fle_encrypted_fields(self, fle_enabled: Optional[bool] = True) -> str:
+        if not fle_enabled:
+            return "-"
+
+        return str(self.generator.pyint(1, 10))
+
+    def c_port(self) -> str:
+        return str(self.generator.pyint(1000, 65535))
+
+    def time_to_first_byte(self) -> float:
+        return self.generator.pyfloat(right_digits=3, positive=True, max_value=1000)
+
+    def x_edge_detailed_result_type(self) -> str:
+        # TODO: Handle special cases
+        return self.result_type()
+
+    def sc_content_type(self) -> str:
+        return self.generator.random_element(
+            elements=("text/html", "application/json", "application/xml", "binary/octet-stream")
+        )
+
+    def sc_content_len(self) -> str:
+        return self.generator.random_element(
+            elements=("-", str(self.generator.pyint(min_value=1, max_value=1024 * 1024 * 1024)))
+        )
+
+    def sc_range_start(self) -> str:
+        return self.generator.random_element(
+            elements=("-", str(self.generator.pyint(min_value=1, max_value=1024 * 1024 * 1024)))
+        )
+
+    def sc_range_end(self) -> str:
+        return self.generator.random_element(
+            elements=("-", str(self.generator.pyint(min_value=1, max_value=1024 * 1024 * 1024)))
+        )

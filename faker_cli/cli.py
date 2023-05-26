@@ -1,7 +1,7 @@
 from faker import Faker
 import click
 import sys
-from faker_cli.templates import S3AccessLogs, S3AccessWriter, CloudTrailLogs
+from faker_cli.templates import CloudFrontWriter, S3AccessLogs, S3AccessWriter, CloudTrailLogs, CloudFrontLogs
 
 from faker_cli.writer import CSVWriter, JSONWriter
 from typing import List
@@ -21,21 +21,28 @@ KLAS_MAPPER = {
     "json": JSONWriter
 }
 
+TEMPLATE_MAPPER = {
+    "s3access": [S3AccessWriter, "s3_access_log"],
+    "cloudfront": [CloudFrontWriter, "cloudfront_log"],
+}
+
 fake = Faker()
 fake.add_provider(S3AccessLogs)
 fake.add_provider(CloudTrailLogs)
+fake.add_provider(CloudFrontLogs)
 
 @click.command()
 @click.option("--num-rows", "-n", default=1, help="Number of rows")
 @click.option("--format", "-f", type=click.Choice(["csv", "json"]), default="csv", help="Format of the output")
 @click.option("--columns", "-c", help="Column names", default=None, required=False)
-@click.option("--template", "-t", help="Template to use", type=click.Choice(["s3access"]), default=None)
+@click.option("--template", "-t", help="Template to use", type=click.Choice(["s3access", "cloudfront"]), default=None)
 @click.argument("column_types", required=False)
 def main(num_rows, format, columns, template, column_types):
     if template:
-        writer = S3AccessWriter(sys.stdout, None)
+        writer = TEMPLATE_MAPPER[template][0](sys.stdout, None)
+        log_entry = TEMPLATE_MAPPER[template][1]
         for i in range(num_rows):
-            row = fake.format("s3_access_log")
+            row = fake.format(log_entry)
             writer.write(row)
         return
         
