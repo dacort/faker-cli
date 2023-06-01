@@ -28,7 +28,6 @@ TEMPLATE_MAPPER = {
 
 fake = Faker()
 fake.add_provider(S3AccessLogs)
-fake.add_provider(CloudTrailLogs)
 fake.add_provider(CloudFrontLogs)
 
 @click.command()
@@ -38,6 +37,21 @@ fake.add_provider(CloudFrontLogs)
 @click.option("--template", "-t", help="Template to use", type=click.Choice(["s3access", "cloudfront"]), default=None)
 @click.argument("column_types", required=False)
 def main(num_rows, format, columns, template, column_types):
+    """
+    Generate fake data, easily.
+
+    COLUMN_TYPES is a comma-seperated list of Faker property names, like
+    pyint,username,date_this_year
+
+    You can also use --template for real-world synthetic data.
+    """
+    if not template and not column_types:
+        ctx = click.get_current_context()
+        click.echo(ctx.get_help())
+        ctx.exit()
+        raise click.BadArgumentUsage(
+            "either --template or a list of Faker property names must be provided."
+        )
     if template:
         writer = TEMPLATE_MAPPER[template][0](sys.stdout, None)
         log_entry = TEMPLATE_MAPPER[template][1]

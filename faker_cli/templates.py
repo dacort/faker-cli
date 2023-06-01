@@ -217,6 +217,10 @@ class AWSProvider(BaseProvider):
         resource_id: Optional[str] = None,
         resource_type: Optional[str] = None,
     ) -> str:
+        """
+        Build an ARN for either a random service or provided.
+        Reference: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference-arns.html
+        """
         if not partition:
             partition = self.generator.random_element(elements=["aws", "aws-cn", "aws-us-gov"])
         if not service:
@@ -241,6 +245,9 @@ class AWSProvider(BaseProvider):
         return f"arn:{partition}:{service}:{region or ''}:{account_id}:{resource_part}"
 
     def aws_iam_arn(self, service: Optional[str] = None, resource: Optional[str] = None) -> str:
+        """
+        Generate an IAM or STS ARN
+        """
         if service is None:
             service = self.generator.random_element(elements=["iam", "sts"])
         if resource is None:
@@ -328,6 +335,7 @@ class S3AccessLogs(AWSProvider):
 
     def s3_bucket(self) -> str:
         # return self.generator.random_element(elements=self.bucket_names)
+        # TODO: S3 Buckets should be globally unique
         return self.generator.domain_word()
 
     def s3_bucket_owner_tuple(self) -> str:
@@ -514,10 +522,20 @@ class S3AccessLogs(AWSProvider):
 
 
 class CloudTrailLogs(AWSProvider):
+    """
+    There are CloudTrail management events and CloudTrail data events.
+    There is a page [here](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/logging-management-events-with-cloudtrail.html)
+    that has more detail about what each of those are, but in short management events are control plane operations and 
+    data events are operations on specific resources. 
+    Alas, there's no easy way to generate realistic fake versions of these without serious time-consuming work.
+    - CloudTrail list of service topics for each AWS service: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-aws-service-specific-topics.html
+    - Table of data events: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/logging-data-events-with-cloudtrail.html
+    - Example of S3 data event: https://docs.aws.amazon.com/AmazonS3/latest/userguide/cloudtrail-logging-s3-info.html#cloudtrail-object-level-tracking
+    """
     __use_weighting__ = True
 
     def event_version(self) -> str:
-        return "1.0"
+        return "1.08"
 
     def event_time(self) -> str:
         return self.generator.iso8601()
