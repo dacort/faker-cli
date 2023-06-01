@@ -1,4 +1,4 @@
-name: PyPi PUblish
+name: PyPi Publish
 on:
   # Only deploy these artifacts when a semantic tag is applied
   push:
@@ -44,3 +44,5 @@ jobs:
     - uses: actions/download-artifact@v3
     - name: Publish package distributions to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+          packages-dir: dist/
