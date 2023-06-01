@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "faker-cli"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
 authors = ["Damon P. Cortesi <d.lifehacker@gmail.com>"]
 readme = "README.md"
