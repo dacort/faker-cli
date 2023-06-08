@@ -2,7 +2,7 @@
 
 Faker is an awesome Python library, but I often just want a simple command I can run to generate data in a variety of formats.
 
-With Faker CLI, you can easily generate CSV or JSON data with fields of your choosing.
+With Faker CLI, you can easily generate CSV, JSON, or Parquet data with fields of your choosing.
 
 You can also utilize pre-built templates for common data formats!
 
@@ -68,6 +68,20 @@ fake -n 10 pyint,user_name,date_this_year -f json -c id,awesome_name,last_attent
 {"id": 6986, "awesome_name": "ballen", "last_attention_at": "2023-01-08"}
 {"id": 6892, "awesome_name": "jennifer61", "last_attention_at": "2023-01-03"}
 {"id": 1967, "awesome_name": "jmendoza", "last_attention_at": "2023-01-23"}
+```
+
+### Parquet
+
+OK, it had to happen, you can even write Parquet. 
+
+```bash
+fake -n 10 pyint,user_name,date_this_year -f parquet -o sample.parquet
+```
+
+_youcanevenwritestraighttos3_ 🤭
+
+```bash
+fake -n 10 pyint,user_name,date_this_year -f parquet -o s3://YOUR_BUCKET/data/sample.parquet
 ```
 
 ## Templates
