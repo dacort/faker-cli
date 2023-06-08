@@ -51,4 +51,4 @@ jobs:
       name: Run tests
       run: |
         source $VENV
-        poetry run pytest --cov emr_cli tests/
+        poetry run pytest -v
