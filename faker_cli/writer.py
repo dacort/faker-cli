@@ -15,7 +15,7 @@ class Writer:
         pass
 
     def close(self):
-        self.writer.close()
+        pass
 
 
 class CSVWriter(Writer):
@@ -26,9 +26,6 @@ class CSVWriter(Writer):
 
     def write(self, row):
         self.writer.writerow(row)
-    
-    def close(self):
-        pass
 
 
 class JSONWriter(Writer):

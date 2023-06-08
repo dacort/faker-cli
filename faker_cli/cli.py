@@ -59,6 +59,8 @@ def main(num_rows, format, output, columns, template, column_types):
     # Parquet output requires a filename
     if format == "parquet" and output is None:
         raise click.BadArgumentUsage("parquet format requires --output/-o filename parameter.")
+    if output is not None and format != "parquet":
+        raise click.BadArgumentUsage("output files not supported for csv/json yet.")
     
     # If the user provides a template, we use that provider and writer and exit.
     # We assume a template has a custom writer that may be different than CSV or JSON
