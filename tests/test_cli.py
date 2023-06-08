@@ -17,7 +17,7 @@ def test_csv_output():
     runner = CliRunner()
     result = runner.invoke(main, ["pyint,user_name"])
     assert result.exit_code == 0
-    lines = result.output.strip().split("\n")
+    lines = result.output.strip().splitlines()
     assert len(lines) == 2  # header is included
     assert lines[0] == "pyint,user_name"
     assert len(lines[1].split(",")) == 2
@@ -27,7 +27,7 @@ def test_json_output():
     runner = CliRunner()
     result = runner.invoke(main, ["pyint,user_name", "-f", "json"])
     assert result.exit_code == 0
-    lines = result.output.strip().split("\n")
+    lines = result.output.strip().splitlines()
     assert len(lines) == 1
     data: dict = json.loads(lines[0])
     assert len(data.keys()) == 2
@@ -40,14 +40,14 @@ def test_numlines():
     for format in ["csv", "json"]:
         result = runner.invoke(main, ["pyint,user_name", "-f", format, "-n", "5"])
         assert result.exit_code == 0
-        lines = result.output.strip().split("\n")
+        lines = result.output.strip().splitlines()
         assert len(lines) == (6 if format == "csv" else 5)
 
 def test_custom_column_names():
     runner = CliRunner()
     result = runner.invoke(main, ["pyint,user_name", "-f", "json", "-c", "first,second"])
     assert result.exit_code == 0
-    lines = result.output.strip().split("\n")
+    lines = result.output.strip().splitlines()
     data: dict = json.loads(lines[0])
     assert len(data.keys()) == 2
     assert list(data) == ["first", "second"]
