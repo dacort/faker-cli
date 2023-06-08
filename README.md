@@ -70,6 +70,14 @@ fake -n 10 pyint,user_name,date_this_year -f json -c id,awesome_name,last_attent
 {"id": 1967, "awesome_name": "jmendoza", "last_attention_at": "2023-01-23"}
 ```
 
+### Parquet
+
+OK, it had to happen, you can even write Parquet. 
+
+```bash
+fake -n 10 pyint,user_name,date_this_year -f parquet -o sample.parquet
+```
+
 ## Templates
 
 Want to generate 1 MILLION S3 Access logs in ~2 minutes? Now you can.
