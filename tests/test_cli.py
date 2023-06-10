@@ -1,5 +1,3 @@
-from _pytest import tmpdir
-
 from faker_cli.cli import main
 from click.testing import CliRunner
 import json
