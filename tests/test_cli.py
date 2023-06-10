@@ -1,6 +1,7 @@
 from faker_cli.cli import main
 from click.testing import CliRunner
 import json
+import deltalake
 
 
 # Test that help is provided if the user provides no arguments
@@ -51,3 +52,17 @@ def test_custom_column_names():
     data: dict = json.loads(lines[0])
     assert len(data.keys()) == 2
     assert list(data) == ["first", "second"]
+
+def test_deltalake_output(tmp_path):
+    runner = CliRunner()
+    file = tmp_path / 'table'
+    result = runner.invoke(main, ["pyint,user_name", "-f", "deltalake", "-o", file])
+    assert result.exit_code == 0
+    delta_table = deltalake.DeltaTable(file)
+    arrow_table = delta_table.to_pyarrow_table()
+    lines_count = arrow_table.num_rows
+    assert lines_count == 1
+
+    column_names = arrow_table.column_names
+    assert column_names == ["pyint", "user_name"]
+    assert arrow_table.num_columns == 2

@@ -3,7 +3,7 @@ import click
 import sys
 from faker_cli.templates import CloudFrontWriter, S3AccessLogs, S3AccessWriter, CloudTrailLogs, CloudFrontLogs
 
-from faker_cli.writer import CSVWriter, JSONWriter, ParquetWriter
+from faker_cli.writer import CSVWriter, JSONWriter, ParquetWriter, DeltaLakeWriter
 from typing import List
 
 def infer_column_names(col_names, col_types: str) -> List[str]:
@@ -20,6 +20,7 @@ KLAS_MAPPER = {
     "csv": CSVWriter,
     "json": JSONWriter,
     "parquet": ParquetWriter,
+    "deltalake": DeltaLakeWriter
 }
 
 TEMPLATE_MAPPER = {
@@ -33,7 +34,7 @@ fake.add_provider(CloudFrontLogs)
 
 @click.command()
 @click.option("--num-rows", "-n", default=1, help="Number of rows")
-@click.option("--format", "-f", type=click.Choice(["csv", "json", "parquet"]), default="csv", help="Format of the output")
+@click.option("--format", "-f", type=click.Choice(["csv", "json", "parquet", "deltalake"]), default="csv", help="Format of the output")
 @click.option("--output", "-o", type=click.Path(writable=True))
 @click.option("--columns", "-c", help="Column names", default=None, required=False)
 @click.option("--template", "-t", help="Template to use", type=click.Choice(["s3access", "cloudfront"]), default=None)
@@ -57,9 +58,9 @@ def main(num_rows, format, output, columns, template, column_types):
         )
 
     # Parquet output requires a filename
-    if format == "parquet" and output is None:
-        raise click.BadArgumentUsage("parquet format requires --output/-o filename parameter.")
-    if output is not None and format != "parquet":
+    if format in ["parquet", "deltalake"] and output is None:
+        raise click.BadArgumentUsage("parquet | deltalake formats requires --output/-o filename parameter.")
+    if output is not None and format not in ["parquet", "deltalake"]:
         raise click.BadArgumentUsage("output files not supported for csv/json yet.")
     
     # If the user provides a template, we use that provider and writer and exit.
