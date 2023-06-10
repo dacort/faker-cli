@@ -3,6 +3,7 @@ import json
 from typing import Optional
 import pyarrow as pa
 import pyarrow.parquet as pq
+import deltalake
 
 
 class Writer:
@@ -56,3 +57,8 @@ class ParquetWriter(Writer):
 
     def close(self):
         pq.write_table(self.table, self.filename)
+
+
+class DeltaLakeWriter(ParquetWriter):
+    def close(self):
+        deltalake.write_deltalake(table_or_uri=self.filename, data=self.table)

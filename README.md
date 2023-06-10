@@ -84,6 +84,15 @@ _youcanevenwritestraighttos3_ 🤭
 fake -n 10 pyint,user_name,date_this_year -f parquet -o s3://YOUR_BUCKET/data/sample.parquet
 ```
 
+### Delta Lake
+
+Data can be exported as a delta lake table.  
+
+```bash
+fake -n 10 pyint,user_name,date_this_year -f deltalake -o sample_data
+```
+
+
 ## Templates
 
 Want to generate 1 MILLION S3 Access logs in ~2 minutes? Now you can.
