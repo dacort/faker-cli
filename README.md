@@ -1,12 +1,24 @@
 # Faker CLI
 
-Faker is an awesome Python library, but I often just want a simple command I can run to generate data in a variety of formats.
+[Faker](https://faker.readthedocs.io/en/master/) is an awesome Python library, but I often just want a simple command I can run to generate data in a variety of formats.
 
 With Faker CLI, you can easily generate CSV, JSON, or Parquet data with fields of your choosing.
 
 You can also utilize pre-built templates for common data formats!
 
+## Installation
+
+```bash
+pip install faker-cli
+```
+
 ## Usage
+
+Once installed you should have the `fake` command in your path. Run the following see usage / help:
+
+```bash
+fake --help
+```
 
 By default, `fake` will generate a CSV output for you. You just specify the number of rows you want and the column types.
 
@@ -95,7 +107,11 @@ fake -n 10 pyint,user_name,date_this_year -f deltalake -o sample_data
 
 ## Templates
 
-Want to generate 1 MILLION S3 Access logs in ~2 minutes? Now you can.
+The libary includes a couple templates that can be used to generate certain types of fake data easier.
+
+Today, the only templates that exist are for S3 Access and CloudFront logs.
+
+Want to generate 1 MILLION S3 Access logs in ~2 minutes? Now you can. (But I only show 10 below so as not to crash your terminal)
 
 ```bash
 fake -t s3access -n 10
