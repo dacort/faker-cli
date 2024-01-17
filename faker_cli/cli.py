@@ -90,7 +90,7 @@ def main(num_rows, format, output, columns, template, column_types):
         try:
             from faker_cli.writers.delta import DeltaLakeWriter
 
-            KLAS_MAPPER["delta"] = DeltaLakeWriter
+            KLAS_MAPPER["deltalake"] = DeltaLakeWriter
         except ImportError:
             raise click.ClickException(
                 "Using Delta writer, but the 'deltalake' package is not installed. "
