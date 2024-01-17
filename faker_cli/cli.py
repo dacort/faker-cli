@@ -1,10 +1,17 @@
-from faker import Faker
-import click
 import sys
-from faker_cli.templates import CloudFrontWriter, S3AccessLogs, S3AccessWriter, CloudTrailLogs, CloudFrontLogs
-
-from faker_cli.writer import CSVWriter, JSONWriter, ParquetWriter, DeltaLakeWriter
 from typing import List
+
+import click
+from faker import Faker
+
+from faker_cli.templates import (
+    CloudFrontLogs,
+    CloudFrontWriter,
+    S3AccessLogs,
+    S3AccessWriter,
+)
+from faker_cli.writer import CSVWriter, JSONWriter
+
 
 def infer_column_names(col_names, col_types: str) -> List[str]:
     """
@@ -13,14 +20,13 @@ def infer_column_names(col_names, col_types: str) -> List[str]:
     # For now, nothing special - but eventually we need to parse things out
     if col_names:
         return col_names.split(",")
-    
+
     return col_types.split(",")
+
 
 KLAS_MAPPER = {
     "csv": CSVWriter,
     "json": JSONWriter,
-    "parquet": ParquetWriter,
-    "deltalake": DeltaLakeWriter
 }
 
 TEMPLATE_MAPPER = {
@@ -32,9 +38,16 @@ fake = Faker()
 fake.add_provider(S3AccessLogs)
 fake.add_provider(CloudFrontLogs)
 
+
 @click.command()
 @click.option("--num-rows", "-n", default=1, help="Number of rows")
-@click.option("--format", "-f", type=click.Choice(["csv", "json", "parquet", "deltalake"]), default="csv", help="Format of the output")
+@click.option(
+    "--format",
+    "-f",
+    type=click.Choice(["csv", "json", "parquet", "deltalake"]),
+    default="csv",
+    help="Format of the output",
+)
 @click.option("--output", "-o", type=click.Path(writable=True))
 @click.option("--columns", "-c", help="Column names", default=None, required=False)
 @click.option("--template", "-t", help="Template to use", type=click.Choice(["s3access", "cloudfront"]), default=None)
@@ -53,16 +66,37 @@ def main(num_rows, format, output, columns, template, column_types):
         ctx = click.get_current_context()
         click.echo(ctx.get_help())
         ctx.exit()
-        raise click.BadArgumentUsage(
-            "either --template or a list of Faker property names must be provided."
-        )
+        raise click.BadArgumentUsage("either --template or a list of Faker property names must be provided.")
 
     # Parquet output requires a filename
     if format in ["parquet", "deltalake"] and output is None:
         raise click.BadArgumentUsage("parquet | deltalake formats requires --output/-o filename parameter.")
     if output is not None and format not in ["parquet", "deltalake"]:
         raise click.BadArgumentUsage("output files not supported for csv/json yet.")
-    
+
+    # Optionally load additional features
+    if format == "parquet":
+        try:
+            from faker_cli.writers.parquet import ParquetWriter
+
+            KLAS_MAPPER["parquet"] = ParquetWriter
+        except ImportError:
+            raise click.ClickException(
+                "Using Parquet writer, but the 'pyarrow' package is not installed. "
+                "Make sure to install faker-cli using `pip install faker-cli[parquet]`."
+            )
+
+    if format == "deltalake":
+        try:
+            from faker_cli.writers.delta import DeltaLakeWriter
+
+            KLAS_MAPPER["delta"] = DeltaLakeWriter
+        except ImportError:
+            raise click.ClickException(
+                "Using Delta writer, but the 'deltalake' package is not installed. "
+                "Make sure to install faker-cli using `pip install faker-cli[delta]`."
+            )
+
     # If the user provides a template, we use that provider and writer and exit.
     # We assume a template has a custom writer that may be different than CSV or JSON
     if template:
@@ -72,13 +106,13 @@ def main(num_rows, format, output, columns, template, column_types):
             row = fake.format(log_entry)
             writer.write(row)
         return
-        
+
     # Now, if a template hasn't been provided, generate some fake data!
     col_types = column_types.split(",")
     headers = infer_column_names(columns, column_types)
     writer = KLAS_MAPPER.get(format)(sys.stdout, headers, output)
     for i in range(num_rows):
         # TODO: Handle args
-        row = [ fake.format(ctype) for ctype in col_types ]
+        row = [fake.format(ctype) for ctype in col_types]
         writer.write(row)
     writer.close()
