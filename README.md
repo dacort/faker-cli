@@ -12,6 +12,9 @@ You can also utilize pre-built templates for common data formats!
 pip install faker-cli
 ```
 
+> [!TIP]
+> To use Parquet or Delta Lake, use `pip install faker-cli[parquet]` or `pip install faker-cli[delta]`
+
 ## Usage
 
 Once installed you should have the `fake` command in your path. Run the following see usage / help:
@@ -86,6 +89,8 @@ fake -n 10 pyint,user_name,date_this_year -f json -c id,awesome_name,last_attent
 
 OK, it had to happen, you can even write Parquet. 
 
+Install with the `parquet` module: `pip install faker-cli[parquet]`
+
 ```bash
 fake -n 10 pyint,user_name,date_this_year -f parquet -o sample.parquet
 ```
@@ -98,7 +103,9 @@ fake -n 10 pyint,user_name,date_this_year -f parquet -o s3://YOUR_BUCKET/data/sa
 
 ### Delta Lake
 
-Data can be exported as a delta lake table.  
+Data can be exported as a delta lake table.
+
+Install with the `delta` module: `pip install faker-cli[delta]`
 
 ```bash
 fake -n 10 pyint,user_name,date_this_year -f deltalake -o sample_data
