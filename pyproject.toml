@@ -10,7 +10,7 @@ packages = [{include = "faker_cli"}]
 python = "^3.9"
 faker = "^18.9.0"
 click = "^8.1.3"
-pyarrow = "^12.0.0"
+pyarrow = "~14.0.2"
 deltalake = "^0.9.0"
 
 
