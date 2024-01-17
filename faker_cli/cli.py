@@ -91,8 +91,7 @@ def main(num_rows, format, output, columns, template, column_types):
             from faker_cli.writers.delta import DeltaLakeWriter
 
             KLAS_MAPPER["deltalake"] = DeltaLakeWriter
-        except ImportError as e:
-            print(e)
+        except ImportError:
             raise click.ClickException(
                 "Using Delta writer, but the 'deltalake' package is not installed. "
                 "Make sure to install faker-cli using `pip install faker-cli[delta]`."

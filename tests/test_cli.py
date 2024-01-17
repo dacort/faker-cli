@@ -57,7 +57,6 @@ def test_deltalake_output(tmp_path):
     runner = CliRunner()
     file = tmp_path / 'table'
     result = runner.invoke(main, ["pyint,user_name", "-f", "deltalake", "-o", file])
-    print(result.stdout)
     assert result.exit_code == 0
     delta_table = deltalake.DeltaTable(file)
     arrow_table = delta_table.to_pyarrow_table()
