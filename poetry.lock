@@ -32,7 +32,7 @@ name = "deltalake"
 version = "0.9.0"
 description = "Native Delta Lake Python binding based on delta-rs with Pandas integration"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.7"
 files = [
     {file = "deltalake-0.9.0-1-cp37-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:f0c1775e4624412e2ccda8f96cb19e952960e2fa8aa59ed4fdfd6fc5dcac8f49"},
@@ -99,7 +99,7 @@ name = "numpy"
 version = "1.24.3"
 description = "Fundamental package for array computing in Python"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.8"
 files = [
     {file = "numpy-1.24.3-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:3c1104d3c036fb81ab923f507536daedc718d0ad5a8707c6061cdfd6d184e570"},
@@ -165,7 +165,7 @@ name = "pyarrow"
 version = "14.0.2"
 description = "Python library for Apache Arrow"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.8"
 files = [
     {file = "pyarrow-14.0.2-cp310-cp310-macosx_10_14_x86_64.whl", hash = "sha256:ba9fe808596c5dbd08b3aeffe901e5f81095baaa28e7d5118e01354c64f22807"},
@@ -271,7 +271,11 @@ files = [
     {file = "tomli-2.0.1.tar.gz", hash = "sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f"},
 ]
 
+[extras]
+delta = ["deltalake", "pyarrow"]
+parquet = ["pyarrow"]
+
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "d5eb140b7c3fcbfa4f31cfa2fe389b98f826301bcb995f84b75db50739a4ffd6"
+content-hash = "7c8da16d4bc16e6cb7b2ae99639bc97154fcb8538b903c36c99b94a81cf339c3"
