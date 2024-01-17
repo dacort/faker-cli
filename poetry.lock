@@ -278,4 +278,4 @@ parquet = ["pyarrow"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "7c8da16d4bc16e6cb7b2ae99639bc97154fcb8538b903c36c99b94a81cf339c3"
+content-hash = "302241f1888f1c89c0e4b4571b479cfe796c6a648ee868fd1d1ec257cdb3e422"
