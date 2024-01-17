@@ -20,6 +20,7 @@ parquet = ["pyarrow"]
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.3.1"
+faker_cli = {version = "*", extras = ["all"]}
 
 [build-system]
 requires = ["poetry-core"]
