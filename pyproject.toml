@@ -21,6 +21,9 @@ parquet = ["pyarrow"]
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.3.1"
 
+[tool.poetry.group.dev]
+optional = true
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
