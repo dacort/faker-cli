@@ -32,7 +32,7 @@ name = "deltalake"
 version = "0.9.0"
 description = "Native Delta Lake Python binding based on delta-rs with Pandas integration"
 category = "main"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "deltalake-0.9.0-1-cp37-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:f0c1775e4624412e2ccda8f96cb19e952960e2fa8aa59ed4fdfd6fc5dcac8f49"},
@@ -99,7 +99,7 @@ name = "numpy"
 version = "1.24.3"
 description = "Fundamental package for array computing in Python"
 category = "main"
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "numpy-1.24.3-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:3c1104d3c036fb81ab923f507536daedc718d0ad5a8707c6061cdfd6d184e570"},
@@ -165,7 +165,7 @@ name = "pyarrow"
 version = "14.0.2"
 description = "Python library for Apache Arrow"
 category = "main"
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "pyarrow-14.0.2-cp310-cp310-macosx_10_14_x86_64.whl", hash = "sha256:ba9fe808596c5dbd08b3aeffe901e5f81095baaa28e7d5118e01354c64f22807"},
@@ -278,4 +278,4 @@ parquet = ["pyarrow"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "302241f1888f1c89c0e4b4571b479cfe796c6a648ee868fd1d1ec257cdb3e422"
+content-hash = "607005e57d90215663b379a4096b0df52194c68bc2b766ff6d640fc98d036d4d"
