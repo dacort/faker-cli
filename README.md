@@ -95,6 +95,9 @@ Some [Faker providers](https://faker.readthedocs.io/en/master/providers/baseprov
 fake -n 10 "pyint(1;100),credit_card_number(amex),pystr_format(?#-####)" -f json -c id,credit_card_number,license_plate
 ```
 
+> [!IMPORTANT]
+> When using arguments with output formats like JSON, it's best to provide column headers as well with `-c`.
+
 And unique values are supported as well.
 
 ```bash

@@ -1,6 +1,4 @@
-from typing import List, Tuple
-
-def infer_column_names(col_names, col_types: str) -> List[str]:
+def infer_column_names(col_names, col_types: str) -> list[str]:
     """
     Infer column names from column types
     """
@@ -11,7 +9,7 @@ def infer_column_names(col_names, col_types: str) -> List[str]:
     return col_types.split(",")
 
 
-def parse_column_types(input_string: str) -> List[Tuple[str, List]]:
+def parse_column_types(input_string: str) -> list[tuple[str, list]]:
     """
     Parse a string of the format "pyint(1;10),datetime,profile(ssn,birthdate)" and split it by commas with optional parenthese-inclosed arguments.
     """
