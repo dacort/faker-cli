@@ -1,7 +1,9 @@
-from faker_cli.cli import main
-from click.testing import CliRunner
 import json
+
 import deltalake
+from click.testing import CliRunner
+
+from faker_cli.cli import main
 
 
 # Test that help is provided if the user provides no arguments
@@ -44,6 +46,7 @@ def test_numlines():
         lines = result.output.strip().splitlines()
         assert len(lines) == (6 if format == "csv" else 5)
 
+
 def test_custom_column_names():
     runner = CliRunner()
     result = runner.invoke(main, ["pyint,user_name", "-f", "json", "-c", "first,second"])
@@ -53,9 +56,10 @@ def test_custom_column_names():
     assert len(data.keys()) == 2
     assert list(data) == ["first", "second"]
 
+
 def test_deltalake_output(tmp_path):
     runner = CliRunner()
-    file = tmp_path / 'table'
+    file = tmp_path / "table"
     result = runner.invoke(main, ["pyint,user_name", "-f", "deltalake", "-o", file])
     assert result.exit_code == 0
     delta_table = deltalake.DeltaTable(file)
@@ -66,3 +70,33 @@ def test_deltalake_output(tmp_path):
     column_names = arrow_table.column_names
     assert column_names == ["pyint", "user_name"]
     assert arrow_table.num_columns == 2
+
+
+def test_provider_args():
+    runner = CliRunner()
+    result = runner.invoke(main, ["-n", "10", "pyint(1;10)", "-f", "json", "-c", "id"])
+    assert result.exit_code == 0
+    lines = result.output.strip().splitlines()
+    for line in lines:
+        data: dict = json.loads(line)
+        assert data["id"] in range(1, 11)
+
+
+def test_unique_provider_args():
+    runner = CliRunner()
+    result = runner.invoke(main, ["-n", "10", "unique.pyint(1;10)", "-f", "json", "-c", "id"])
+    assert result.exit_code == 0
+    lines = result.output.strip().splitlines()
+    vals = []
+    for line in lines:
+        data: dict = json.loads(line)
+        assert data["id"] in range(1, 11)
+        vals.append(data["id"])
+
+    assert set(vals) == set(range(1, 11))
+
+
+def test_unique_provider_args_limit():
+    runner = CliRunner()
+    result = runner.invoke(main, ["-n", "10", "unique.pyint(1;5)", "-f", "json", "-c", "id"])
+    assert result.exit_code == 1

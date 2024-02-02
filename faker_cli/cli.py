@@ -1,9 +1,9 @@
 import sys
-from typing import List
 
 import click
 from faker import Faker
 
+from faker_cli.parser import infer_column_names, parse_column_types
 from faker_cli.templates import (
     CloudFrontLogs,
     CloudFrontWriter,
@@ -11,18 +11,6 @@ from faker_cli.templates import (
     S3AccessWriter,
 )
 from faker_cli.writer import CSVWriter, JSONWriter
-
-
-def infer_column_names(col_names, col_types: str) -> List[str]:
-    """
-    Infer column names from column types
-    """
-    # For now, nothing special - but eventually we need to parse things out
-    if col_names:
-        return col_names.split(",")
-
-    return col_types.split(",")
-
 
 KLAS_MAPPER = {
     "csv": CSVWriter,
@@ -108,11 +96,22 @@ def main(num_rows, format, output, columns, template, column_types):
         return
 
     # Now, if a template hasn't been provided, generate some fake data!
-    col_types = column_types.split(",")
+    # col_types = column_types.split(",")
+    # Note that if args are provided, the column headers are less than ideal
+    col_types = parse_column_types(column_types)
     headers = infer_column_names(columns, column_types)
-    writer = KLAS_MAPPER.get(format)(sys.stdout, headers, output)
+    format_klas = KLAS_MAPPER.get(format)
+    if format_klas is None:
+        raise click.ClickException(f"Format {format} not supported.")
+    writer = format_klas(sys.stdout, headers, output)
     for i in range(num_rows):
-        # TODO: Handle args
-        row = [fake.format(ctype) for ctype in col_types]
-        writer.write(row)
+        writer.write(generate_row(fake, col_types))
     writer.close()
+
+def generate_row(fake: Faker, column_types: list[tuple[str, list]]) -> list[str]:
+    return [
+        fake.format(ctype, *args)
+        if not ctype.startswith("unique.")
+        else fake.unique.format(ctype.removeprefix("unique."), *args)
+        for ctype, args in column_types
+    ]
