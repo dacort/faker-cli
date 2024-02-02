@@ -66,6 +66,8 @@ fake -n 10 pyint,user_name,date_this_year -f json
 {"pyint": 5306, "user_name": "mark12", "date_this_year": "2023-04-16"}
 ```
 
+### Column Names
+
 Default column names aren't good enough for you? Fine, use your own.
 
 ```bash
@@ -85,9 +87,23 @@ fake -n 10 pyint,user_name,date_this_year -f json -c id,awesome_name,last_attent
 {"id": 1967, "awesome_name": "jmendoza", "last_attention_at": "2023-01-23"}
 ```
 
+### Provider Arguments
+
+Some [Faker providers](https://faker.readthedocs.io/en/master/providers/baseprovider.html) (like `pyint`) take arguments. You can also specify those if you like, separated by semi-colons (_because some arguments take a comma-separated string :)_)
+
+```bash
+fake -n 10 "pyint(1;100),credit_card_number(amex),pystr_format(?#-####)" -f json -c id,credit_card_number,license_plate
+```
+
+And unique values are supported as well.
+
+```bash
+fake -n 10 "unique.pyint(1;10),unique.name"
+```
+
 ### Parquet
 
-OK, it had to happen, you can even write Parquet. 
+OK, it had to happen, you can even write Parquet.
 
 Install with the `parquet` module: `pip install faker-cli[parquet]`
 
@@ -110,7 +126,6 @@ Install with the `delta` module: `pip install faker-cli[delta]`
 ```bash
 fake -n 10 pyint,user_name,date_this_year -f deltalake -o sample_data
 ```
-
 
 ## Templates
 
