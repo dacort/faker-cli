@@ -25,7 +25,7 @@ TEMPLATE_MAPPER = {
 @click.option(
     "--format",
     "-f",
-    type=click.Choice(["csv", "json", "parquet", "deltalake"]),
+    type=click.Choice(["csv", "json", "parquet", "deltalake", "iceberg"]),
     default="csv",
     help="Format of the output",
 )
@@ -39,7 +39,7 @@ def main(num_rows, format, output, columns, template, column_types, provider):
     Generate fake data, easily.
 
     COLUMN_TYPES is a comma-seperated list of Faker property names, like
-    pyint,username,date_this_year
+    pyint,user_name,date_this_year
 
     You can also use --template for real-world synthetic data.
     """
@@ -62,9 +62,9 @@ def main(num_rows, format, output, columns, template, column_types, provider):
         raise click.BadArgumentUsage('templates are only supported with the "faker" provider.')
 
     # Parquet output requires a filename
-    if format in ["parquet", "deltalake"] and output is None:
+    if format in ["parquet", "deltalake", "iceberg"] and output is None:
         raise click.BadArgumentUsage("parquet | deltalake formats requires --output/-o filename parameter.")
-    if output is not None and format not in ["parquet", "deltalake"]:
+    if output is not None and format not in ["parquet", "deltalake", "iceberg"]:
         raise click.BadArgumentUsage("output files not supported for csv/json yet.")
 
     # Optionally load additional features
@@ -88,6 +88,17 @@ def main(num_rows, format, output, columns, template, column_types, provider):
             raise click.ClickException(
                 "Using Delta writer, but the 'deltalake' package is not installed. "
                 "Make sure to install faker-cli using `pip install faker-cli[delta]`."
+            )
+
+    if format == "iceberg":
+        try:
+            from faker_cli.writers.iceberg import IcebergWriter
+
+            KLAS_MAPPER["iceberg"] = IcebergWriter
+        except ImportError:
+            raise click.ClickException(
+                "Using Iceberg writer, but the 'iceberg' package is not installed. "
+                "Make sure to install faker-cli using `pip install faker-cli[iceberg]`."
             )
 
     # If the user provides a template, we use that provider and writer and exit.
