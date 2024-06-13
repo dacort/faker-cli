@@ -87,6 +87,19 @@ fake -n 10 pyint,user_name,date_this_year -f json -c id,awesome_name,last_attent
 {"id": 1967, "awesome_name": "jmendoza", "last_attention_at": "2023-01-23"}
 ```
 
+### Providers (beta)
+
+While [Faker](https://faker.readthedocs.io) is a sweet library, we all like options don't we? [Mimesis](https://mimesis.name/en/master/) is _also_ awesome and can be quite a bit faster than Faker. 🤫 You can use a different provider by using `-p mimesis`.
+
+> [!NOTE]  
+> Providers use their own syntax for data types, so you must change out your column names as necessary.
+
+To generate the same dataset above with Mimesis for example:
+
+```bash
+fake -p mimesis -n 10 "numeric.integer_number(0),person.username,datetime.date(2024)" -f json -c id,awesome_name,last_attention_at
+```
+
 ### Provider Arguments
 
 Some [Faker providers](https://faker.readthedocs.io/en/master/providers/baseprovider.html) (like `pyint`) take arguments. You can also specify those if you like, separated by semi-colons (_because some arguments take a comma-separated string :)_)

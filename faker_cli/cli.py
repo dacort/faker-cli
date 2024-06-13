@@ -33,7 +33,7 @@ TEMPLATE_MAPPER = {
 @click.option("--columns", "-c", help="Column names", default=None, required=False)
 @click.option("--template", "-t", help="Template to use", type=click.Choice(["s3access", "cloudfront"]), default=None)
 @click.argument("column_types", required=False)
-@click.option("--provider", "-p", type=click.Choice(["faker", "mimesis"]), default="faker")
+@click.option("--provider", "-p", help="Fake data provider", type=click.Choice(["faker", "mimesis"]), default="faker")
 def main(num_rows, format, output, columns, template, column_types, provider):
     """
     Generate fake data, easily.

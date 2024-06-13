@@ -6,7 +6,7 @@ class MimesisProvider:
         self.field = Field()
 
     def generate_row(self, column_types: list[tuple[str, list]]) -> list[str]:
-        return [self.field(ctype) for ctype, args in column_types]
+        return [self.field._lookup_method(ctype)(*args) for ctype, args in column_types]
 
     def format(self, log_entry) -> list[str]:
         raise NotImplementedError
