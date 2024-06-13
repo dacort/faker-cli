@@ -4,12 +4,9 @@ import click
 from faker import Faker
 
 from faker_cli.parser import infer_column_names, parse_column_types
-from faker_cli.templates import (
-    CloudFrontLogs,
-    CloudFrontWriter,
-    S3AccessLogs,
-    S3AccessWriter,
-)
+from faker_cli.providers.faker import FakerProvider
+from faker_cli.providers.mimesis import MimesisProvider
+from faker_cli.templates import CloudFrontWriter, S3AccessWriter
 from faker_cli.writer import CSVWriter, JSONWriter
 
 KLAS_MAPPER = {
@@ -21,10 +18,6 @@ TEMPLATE_MAPPER = {
     "s3access": [S3AccessWriter, "s3_access_log"],
     "cloudfront": [CloudFrontWriter, "cloudfront_log"],
 }
-
-fake = Faker()
-fake.add_provider(S3AccessLogs)
-fake.add_provider(CloudFrontLogs)
 
 
 @click.command()
@@ -40,7 +33,8 @@ fake.add_provider(CloudFrontLogs)
 @click.option("--columns", "-c", help="Column names", default=None, required=False)
 @click.option("--template", "-t", help="Template to use", type=click.Choice(["s3access", "cloudfront"]), default=None)
 @click.argument("column_types", required=False)
-def main(num_rows, format, output, columns, template, column_types):
+@click.option("--provider", "-p", type=click.Choice(["faker", "mimesis"]), default="faker")
+def main(num_rows, format, output, columns, template, column_types, provider):
     """
     Generate fake data, easily.
 
@@ -49,12 +43,23 @@ def main(num_rows, format, output, columns, template, column_types):
 
     You can also use --template for real-world synthetic data.
     """
+    if provider == "faker":
+        fake = FakerProvider()
+    elif provider == "mimesis":
+        fake = MimesisProvider()
+    else:
+        pass
+
     # Do some initial validation - we must have either template or column tpes
     if not template and not column_types:
         ctx = click.get_current_context()
         click.echo(ctx.get_help())
         ctx.exit()
         raise click.BadArgumentUsage("either --template or a list of Faker property names must be provided.")
+
+    # Templates are only supported with Faker at the moment
+    if template and provider != "faker":
+        raise click.BadArgumentUsage('templates are only supported with the "faker" provider.')
 
     # Parquet output requires a filename
     if format in ["parquet", "deltalake"] and output is None:
@@ -105,8 +110,9 @@ def main(num_rows, format, output, columns, template, column_types):
         raise click.ClickException(f"Format {format} not supported.")
     writer = format_klas(sys.stdout, headers, output)
     for i in range(num_rows):
-        writer.write(generate_row(fake, col_types))
+        writer.write(fake.generate_row(col_types))
     writer.close()
+
 
 def generate_row(fake: Faker, column_types: list[tuple[str, list]]) -> list[str]:
     return [
