@@ -4,7 +4,7 @@ from typing import Optional
 
 
 class Writer:
-    def __init__(self, output, headers, filename: Optional[str] = None):
+    def __init__(self, output, headers, filename: Optional[str] = None, catalog_uri: Optional[str] = None):
         self.output = output
         self.headers = headers
         self.writer = None

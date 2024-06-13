@@ -32,9 +32,10 @@ TEMPLATE_MAPPER = {
 @click.option("--output", "-o", type=click.Path(writable=True))
 @click.option("--columns", "-c", help="Column names", default=None, required=False)
 @click.option("--template", "-t", help="Template to use", type=click.Choice(["s3access", "cloudfront"]), default=None)
+@click.option("--catalog", "-C", help="Catalog URI", default=None, required=False)
 @click.argument("column_types", required=False)
 @click.option("--provider", "-p", help="Fake data provider", type=click.Choice(["faker", "mimesis"]), default="faker")
-def main(num_rows, format, output, columns, template, column_types, provider):
+def main(num_rows, format, output, columns, template, catalog, column_types, provider):
     """
     Generate fake data, easily.
 
@@ -66,6 +67,8 @@ def main(num_rows, format, output, columns, template, column_types, provider):
         raise click.BadArgumentUsage("parquet | deltalake formats requires --output/-o filename parameter.")
     if output is not None and format not in ["parquet", "deltalake", "iceberg"]:
         raise click.BadArgumentUsage("output files not supported for csv/json yet.")
+    if catalog and format not in ['iceberg']:
+        raise click.BadArgumentUsage("catalog option is only available for Iceberg formats")
 
     # Optionally load additional features
     if format == "parquet":
