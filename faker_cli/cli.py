@@ -64,7 +64,7 @@ def main(num_rows, format, output, columns, template, catalog, column_types, pro
 
     # Parquet output requires a filename
     if format in ["parquet", "deltalake", "iceberg"] and output is None:
-        raise click.BadArgumentUsage("parquet | deltalake formats requires --output/-o filename parameter.")
+        raise click.BadArgumentUsage(f"{format} format requires --output/-o filename parameter.")
     if output is not None and format not in ["parquet", "deltalake", "iceberg"]:
         raise click.BadArgumentUsage("output files not supported for csv/json yet.")
     if catalog and format not in ['iceberg']:
@@ -122,7 +122,8 @@ def main(num_rows, format, output, columns, template, catalog, column_types, pro
     format_klas = KLAS_MAPPER.get(format)
     if format_klas is None:
         raise click.ClickException(f"Format {format} not supported.")
-    writer = format_klas(sys.stdout, headers, output)
+    # Fix in a better way - maybe passing **kwargs?
+    writer = format_klas(sys.stdout, headers, output, catalog)
     for i in range(num_rows):
         writer.write(fake.generate_row(col_types))
     writer.close()

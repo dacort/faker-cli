@@ -149,9 +149,8 @@ And, of course, Iceberg tables!
 
 Currently supported are writing to a Glue or generic SQL catalog.
 
-
 ```bash
-fake -n 10 pyint,user_name,date_this_year -f deltalake -o glue://default.iceberg_sample
+fake -n 10 pyint,user_name,date_this_year -f iceberg -C glue://default.iceberg_sample -o s3://YOUR_BUCKET/iceberg-data/
 ```
 
 ## Templates
