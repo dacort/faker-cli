@@ -143,6 +143,16 @@ Install with the `delta` module: `pip install faker-cli[delta]`
 fake -n 10 pyint,user_name,date_this_year -f deltalake -o sample_data
 ```
 
+### Iceberg
+
+And, of course, Iceberg tables!
+
+Currently supported are writing to a Glue or generic SQL catalog.
+
+```bash
+fake -n 10 pyint,user_name,date_this_year -f iceberg -C glue://default.iceberg_sample -o s3://YOUR_BUCKET/iceberg-data/
+```
+
 ## Templates
 
 The libary includes a couple templates that can be used to generate certain types of fake data easier.

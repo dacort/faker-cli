@@ -25,21 +25,22 @@ TEMPLATE_MAPPER = {
 @click.option(
     "--format",
     "-f",
-    type=click.Choice(["csv", "json", "parquet", "deltalake"]),
+    type=click.Choice(["csv", "json", "parquet", "deltalake", "iceberg"]),
     default="csv",
     help="Format of the output",
 )
 @click.option("--output", "-o", type=click.Path(writable=True))
 @click.option("--columns", "-c", help="Column names", default=None, required=False)
 @click.option("--template", "-t", help="Template to use", type=click.Choice(["s3access", "cloudfront"]), default=None)
+@click.option("--catalog", "-C", help="Catalog URI", default=None, required=False)
 @click.argument("column_types", required=False)
 @click.option("--provider", "-p", help="Fake data provider", type=click.Choice(["faker", "mimesis"]), default="faker")
-def main(num_rows, format, output, columns, template, column_types, provider):
+def main(num_rows, format, output, columns, template, catalog, column_types, provider):
     """
     Generate fake data, easily.
 
     COLUMN_TYPES is a comma-seperated list of Faker property names, like
-    pyint,username,date_this_year
+    pyint,user_name,date_this_year
 
     You can also use --template for real-world synthetic data.
     """
@@ -62,10 +63,12 @@ def main(num_rows, format, output, columns, template, column_types, provider):
         raise click.BadArgumentUsage('templates are only supported with the "faker" provider.')
 
     # Parquet output requires a filename
-    if format in ["parquet", "deltalake"] and output is None:
-        raise click.BadArgumentUsage("parquet | deltalake formats requires --output/-o filename parameter.")
-    if output is not None and format not in ["parquet", "deltalake"]:
+    if format in ["parquet", "deltalake", "iceberg"] and output is None:
+        raise click.BadArgumentUsage(f"{format} format requires --output/-o filename parameter.")
+    if output is not None and format not in ["parquet", "deltalake", "iceberg"]:
         raise click.BadArgumentUsage("output files not supported for csv/json yet.")
+    if catalog and format not in ['iceberg']:
+        raise click.BadArgumentUsage("catalog option is only available for Iceberg formats")
 
     # Optionally load additional features
     if format == "parquet":
@@ -90,6 +93,17 @@ def main(num_rows, format, output, columns, template, column_types, provider):
                 "Make sure to install faker-cli using `pip install faker-cli[delta]`."
             )
 
+    if format == "iceberg":
+        try:
+            from faker_cli.writers.iceberg import IcebergWriter
+
+            KLAS_MAPPER["iceberg"] = IcebergWriter
+        except ImportError:
+            raise click.ClickException(
+                "Using Iceberg writer, but the 'iceberg' package is not installed. "
+                "Make sure to install faker-cli using `pip install faker-cli[iceberg]`."
+            )
+
     # If the user provides a template, we use that provider and writer and exit.
     # We assume a template has a custom writer that may be different than CSV or JSON
     if template:
@@ -108,7 +122,8 @@ def main(num_rows, format, output, columns, template, column_types, provider):
     format_klas = KLAS_MAPPER.get(format)
     if format_klas is None:
         raise click.ClickException(f"Format {format} not supported.")
-    writer = format_klas(sys.stdout, headers, output)
+    # Fix in a better way - maybe passing **kwargs?
+    writer = format_klas(sys.stdout, headers, output, catalog)
     for i in range(num_rows):
         writer.write(fake.generate_row(col_types))
     writer.close()

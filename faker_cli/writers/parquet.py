@@ -5,7 +5,7 @@ import pyarrow.parquet as pq
 from faker_cli.writer import Writer
 
 class ParquetWriter(Writer):
-    def __init__(self, output, headers, filename):
+    def __init__(self, output, headers, filename, catalog_uri):
         super().__init__(output, headers)
         self.filename = filename
         self.table: pa.Table = None
